@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Research Shop — buy a research report</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; background: #0d1117; color: #e6edf3; }
+    input, button { font-size: 16px; padding: 10px; border-radius: 8px; }
+    input { width: 100%; box-sizing: border-box; background: #161b22; color: #e6edf3; border: 1px solid #30363d; }
+    button { background: #238636; color: white; border: 0; cursor: pointer; margin-top: 12px; width: 100%; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-top: 20px; }
+    .mono { font-family: monospace; word-break: break-all; background: #0d1117; padding: 8px; border-radius: 6px; }
+    pre { white-space: pre-wrap; }
+    .status { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>🛒 Research Shop</h1>
+  <p>Pay with crypto (NEAR Intents / 1Click) — get an AI research report.</p>
+  <div class="card">
+    <label>What should we research?</label><br><br>
+    <input id="topic" placeholder="e.g. Current adoption of NEAR Intents">
+    <button onclick="buy()">Buy report — $8.00</button>
+  </div>
+  <div class="card" id="payCard" style="display:none">
+    <h3>Send exactly <span id="amt"></span></h3>
+    <p>To this address:</p>
+    <div class="mono" id="addr"></div>
+    <p>Order: <span id="oid"></span> — status: <span class="status" id="status">awaiting payment</span></p>
+  </div>
+  <div class="card" id="reportCard" style="display:none">
+    <h3>📄 Your report</h3>
+    <pre id="report"></pre>
+  </div>
+  <script>
+    let orderId = null;
+    async function buy() {
+      const topic = document.getElementById('topic').value.trim();
+      if (!topic) return alert('Enter a topic');
+      const r = await fetch('/api/order', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({topic, amount_usd: 8.0})
+      });
+      const o = await r.json();
+      orderId = o.order_id;
+      document.getElementById('payCard').style.display = 'block';
+      document.getElementById('amt').textContent = '$' + (o.amount_in_usd || '8.00');
+      document.getElementById('addr').textContent = o.deposit_address;
+      document.getElementById('oid').textContent = orderId;
+      poll();
+    }
+    async function poll() {
+      const r = await fetch('/api/order/' + orderId);
+      const o = await r.json();
+      document.getElementById('status').textContent = o.status;
+      if (o.status === 'success') {
+        document.getElementById('reportCard').style.display = 'block';
+        document.getElementById('report').textContent = o.report;
+        return;
+      }
+      setTimeout(poll, 5000);
+    }
+  </script>
+</body>
+</html>

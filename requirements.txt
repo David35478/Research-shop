@@ -1,2 +1,6 @@
 pyyaml
 anthropic
+fastapi
+uvicorn
+pydantic
+requests
