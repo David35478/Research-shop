@@ -27,7 +27,10 @@ def get_quote(amount_usd: float, source_chain: str = "eth", dest_chain: str = "n
     cfg = load_config()
     decimals = 6
     amount_base = str(int(round(amount_usd * 10 ** decimals)))
-    deadline = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + 3600))
+    cfg_deadline_min = cfg.get("payment_deadline_minutes", 10)
+    deadline = time.strftime(
+        "%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + cfg_deadline_min * 60)
+    )
 
     body = {
         "dry": False,
