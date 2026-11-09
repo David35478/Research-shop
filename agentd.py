@@ -1,23 +1,30 @@
-"""Automatic agent worker.
+"""Fully automatic agent worker.
 
-Runs a continuous loop: takes queued orders (topic + amount), requests a
-1Click quote, waits for the customer's deposit, then generates the report
-and splits revenue -- no manual steps.
+Lifecycle:
+    1. Customer requests a report -> unique order ID + payment address + amount
+    2. Customer sends the payment
+    3. Agent polls 1Click until the payment is detected
+    4. Agent generates the report
+    5. Agent logs everything, applies the revenue split, and saves the report
 
 Usage:
-    python agentd.py                  # run the daemon
-    python agentd.py enqueue "topic" 8.0   # queue an order
-    python agentd.py status           # show all orders
+    python agentd.py request "topic" 8.0   # customer request -> payment details
+    python agentd.py                       # daemon: poll payments, auto-deliver
+    python agentd.py status                # show all orders
 """
+import uuid
 import json
 import sys
 import threading
 import time
 from pathlib import Path
 
-from src.payment import get_quote, settle_and_fulfill
+from src.payment import get_quote, wait_for_settlement
+from src.agent import process_order
 
 ORDERS_FILE = Path("orders.json")
+REPORTS_DIR = Path("reports")
+_lock = threading.Lock()
 _lock = threading.Lock()
 
 
@@ -32,13 +39,14 @@ def save_orders(orders: list):
         ORDERS_FILE.write_text(json.dumps(orders, indent=2))
 
 
-def enqueue(topic: str, amount_usd: float) -> dict:
+def request_report(topic: str, amount_usd: float) -> dict:
     orders = load_orders()
+    order_id = str(uuid.uuid4())[:8]
     order = {
-        "order_id": f"o{len(orders) + 1}",
+        "order_id": order_id,
         "topic": topic,
         "amount_usd": amount_usd,
-        "status": "quoted",
+        "status": "awaiting_payment",
     }
     quote = get_quote(amount_usd)
     order["deposit_address"] = quote["depositAddress"]
@@ -47,31 +55,69 @@ def enqueue(topic: str, amount_usd: float) -> dict:
     order["time_estimate_s"] = quote.get("timeEstimate")
     orders.append(order)
     save_orders(orders)
-    print(json.dumps({"queued": order}, indent=2))
+    print(json.dumps({
+        "step": "request_accepted",
+        "order_id": order_id,
+        "pay": {
+            "deposit_address": quote["depositAddress"],
+            "amount_usd": quote.get("amountInUsd"),
+            "send_amount_base_units": quote.get("amountIn"),
+            "time_estimate_s": quote.get("timeEstimate"),
+        },
+        "note": "Send the exact amount to this address; the agent will detect it and deliver the report automatically",
+    }, indent=2))
+    return order
+
+
+def fulfill(order: dict) -> dict:
+    """Poll for the payment, then generate + log + save the report."""
+    settlement = wait_for_settlement(order["deposit_address"])
+    order["payment_state"] = settlement.get("status")
+    if settlement.get("status") != "SETTLED":
+        order["status"] = "payment_failed"
+        save_orders(load_orders())
+        return order
+
+    order["status"] = "payment_detected"
+    save_orders(load_orders())
+
+    result = process_order(order["topic"], order["amount_usd"])
+    order.update(result)
+
+    # Deliver the report as a file the customer can pick up
+    REPORTS_DIR.mkdir(exist_ok=True)
+    report_path = REPORTS_DIR / f"{order['order_id']}.md"
+    report_path.write_text(
+        f"# Report: {order['topic']}\n\n"
+        f"Order: {order['order_id']}  |  Paid: ${order['amount_usd']}  |  "
+        f"Payment state: {settlement.get('status')}\n\n"
+        f"{result.get('report', '')}\n"
+    )
+    order["report_path"] = str(report_path)
+    order["status"] = result.get("status", "delivered")
+    save_orders(load_orders())
     return order
 
 
 def run_loop(poll_s: int = 15):
-    print("agentd: watching for payments...", flush=True)
+    print("agentd: polling for payments...", flush=True)
     while True:
         orders = load_orders()
-        changed = False
         for order in orders:
-            if order.get("status") == "quoted":
-                changed = True
-                print(f"agentd: order {order['order_id']} awaiting payment at {order['deposit_address']}", flush=True)
-                result = settle_and_fulfill(order)
-                order.update(result)
+            if order.get("status") == "awaiting_payment":
+                print(f"agentd: order {order['order_id']} polling {order['deposit_address']}", flush=True)
+                fulfill(order)
                 print(f"agentd: order {order['order_id']} -> {order.get('status')} "
-                      f"(payment: {order.get('payment_state')})", flush=True)
-                save_orders(orders)
-        if not changed:
-            time.sleep(poll_s)
+                      f"(payment: {order.get('payment_state')}, report: {order.get('report_path')})", flush=True)
+                save_orders(load_orders())
+        time.sleep(poll_s)
 
 
 def main():
     if len(sys.argv) >= 2 and sys.argv[1] == "enqueue":
-        enqueue(sys.argv[2], float(sys.argv[3]))
+        request_report(sys.argv[2], float(sys.argv[3]))
+    elif len(sys.argv) >= 2 and sys.argv[1] == "request":
+        request_report(sys.argv[2], float(sys.argv[3]))
     elif len(sys.argv) >= 2 and sys.argv[1] == "status":
         print(json.dumps(load_orders(), indent=2))
     else:
