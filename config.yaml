@@ -3,12 +3,12 @@ max_daily_inference_spend_usd: 15.0
 
 revenue_split:
   owner: 0.70
-    contributors: 0.20
-      reserve: 0.10
+  contributors: 0.20
+  reserve: 0.10
 
-      kill_switch: false
+kill_switch: false
 
-      # Inference
-      provider: zai
-      model: glm-5.3
-      max_tokens: 1000
+# Inference
+provider: zai
+model: glm-5.3
+max_tokens: 1000
