@@ -18,6 +18,7 @@ max_tokens: 1000
 payment_token: USDC
 payment_source_chain: eth
 payment_dest_chain: near
+payment_deadline_minutes: 10
 recipient: david354.near
 refund_to: david354.near
 
