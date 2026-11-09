@@ -93,3 +93,20 @@ def run_paid_order(topic: str, payment_amount_usd: float, source_chain: str = "e
     result = process_order(topic, payment_amount_usd)
     result["deposit_address"] = deposit_address
     return result
+
+
+def settle_and_fulfill(order: dict) -> dict:
+    """
+    Fully automatic fulfillment for a queued order:
+    waits for the deposit, then runs the report + revenue split.
+    Mutates the order dict with payment and order results.
+    """
+    settlement = wait_for_settlement(order["deposit_address"])
+    order["payment_state"] = settlement.get("status")
+    if settlement.get("status") != "SETTLED":
+        order["status"] = "payment_failed"
+        return order
+
+    result = process_order(order["topic"], order["amount_usd"])
+    order.update(result)
+    return order
