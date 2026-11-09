@@ -18,5 +18,12 @@ max_tokens: 1000
 payment_token: USDC
 payment_source_chain: eth
 payment_dest_chain: near
-recipient: demo.near
-refund_to: demo.near
+recipient: david354.near
+refund_to: david354.near
+
+# Your addresses (public info only - safe to commit)
+addresses:
+  near: david354.near
+  evm: "0x65798DaDD3a8786DBA2a1DeC2a061ac47C76d45E"
+  solana: "2V2yo8SysPvcJ8onJwLvwkGgJPr9WyWw713EW72SEp1F"
+  btc: "bc1q86q6t5hgmjvdqhdlhnfjast9sdap857zx670fy"
