@@ -1,0 +1,9 @@
+import yaml
+from pathlib import Path
+
+def load_config():
+    config_path = Path("config.yaml")
+        if not config_path.exists():
+                raise FileNotFoundError("config.yaml not found")
+                    with open(config_path) as f:
+                            return yaml.safe_load(f)
