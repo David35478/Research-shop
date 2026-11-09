@@ -9,8 +9,9 @@ revenue_split:
 kill_switch: false
 
 # Inference
-provider: zai
-model: glm-5.3
+# Anthropic-compatible relay
+provider: anthropic
+model: claude-haiku-5-5
 max_tokens: 1000
 
 # Payments via NEAR Intents 1Click
