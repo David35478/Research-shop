@@ -38,8 +38,11 @@ def save_orders(orders: dict):
 
 @app.post("/api/order")
 def create_order(req: OrderRequest):
-    if req.demo:
-        return run_demo_order(req.topic, req.amount_usd)
+    try:
+        if req.demo:
+            return run_demo_order(req.topic, req.amount_usd)
+    except Exception as e:
+        raise HTTPException(500, f"demo order failed: {e}")
     order_id = str(uuid.uuid4())[:8]
     quote = get_quote(req.amount_usd)
     order = {
