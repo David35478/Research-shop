@@ -5,7 +5,7 @@
 ## The 2 minute demo
 
 1. Open the deployed site (Vercel URL in the repo settings) — or run `uvicorn main:app` locally.
-2. Type a topic, click **Buy report — $8.00**. You get a unique deposit address + exact amount.
+2. Type a topic, click **Buy report — $1.00**. You get a unique deposit address + exact amount.
 3. Send 8 USDC from any supported chain (Ethereum, Base, Solana, NEAR…). Cross-chain routing is handled by 1Click; the quote expires in 10 minutes (unused deposits auto-refund).
 4. The page detects the payment, Claude generates the report, and it renders in place.
 5. In the background: revenue splits **70% owner / 20% contributors / 10% compute reserve**, the contributors share is paid **on-chain** to the contributors account by the agent's own restricted key, and the full order is appended to the public ledger.
