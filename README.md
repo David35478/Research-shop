@@ -1,8 +1,8 @@
 # Research Shop
 
-**A one-person AI research firm.** A single autonomous agent that sells short market/tech/crypto reports, accepts payment in any token via NEAR Intents, buys its own inference, pays its contributors **on-chain**, and obeys hard human-set constraints. Humans set the rules in a config file — the agent runs the company.
+**A one-person AI research firm.** A single autonomous agent that sells short market/tech/crypto reports, accepts payment in any token via NEAR Intents, buys its own inference, pays its contributors **onchain**, and obeys hard human-set constraints. Humans set the rules in a config file — the agent runs the company.
 
-## The 2-minute judge demo
+## The 2 minute demo
 
 1. Open the deployed site (Vercel URL in the repo settings) — or run `uvicorn main:app` locally.
 2. Type a topic, click **Buy report — $8.00**. You get a unique deposit address + exact amount.
@@ -12,7 +12,7 @@
 
 No CLI needed for the demo loop — but `agentd.py` and `demo.py` (below) show the same flow headless.
 
-## Why this wins
+## Why this 
 
 - **"Company of one"**: the agent does everything a firm does — sell, produce, pay suppliers (inference), pay staff (contributors), keep books (ledger) — while humans only set guardrails in `config.yaml`.
 - **Real economic loop, not a mock**: payments settle through live 1Click solvers; payouts are real NEAR `ft_transfer` transactions; every step is auditable in `public_ledger.json`.
