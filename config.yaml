@@ -28,3 +28,17 @@ addresses:
   evm: "0x65798DaDD3a8786DBA2a1DeC2a061ac47C76d45E"
   solana: "2V2yo8SysPvcJ8onJwLvwkGgJPr9WyWw713EW72SEp1F"
   btc: "bc1q86q6t5hgmjvdqhdlhnfjast9sdap857zx670fy"
+
+# Revenue split payouts (agent pays contributors on-chain with its restricted key)
+split:
+  contributors_account: contributors.near   # set your contributors pool account
+  token_contract: "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"  # USDC on NEAR
+
+# Agent's own restricted function-call access key (Security track custody model)
+agent_key:
+  env: AGENT_NEAR_PRIVATE_KEY       # ed25519 private key hex, provided via env only
+  account: david354.near            # the agent acts on the owner account...
+  allowed_contracts:                # ...but may ONLY call these contracts...
+    - "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+  allowed_methods:                  # ...and ONLY these methods
+    - ft_transfer

@@ -3,6 +3,7 @@ from src.config import load_config
 from src.constraints import check_constraints, record_spend
 from src.inference import generate_report
 from src.ledger import log_sale
+from src.payout import split_revenue
 
 
 def process_order(topic: str, payment_amount_usd: float, payment_token: str = "USDC") -> dict:
@@ -57,6 +58,12 @@ def process_order(topic: str, payment_amount_usd: float, payment_token: str = "U
 
     log_sale(log_entry)
 
+    # Step 5: on-chain payout of the contributors share (restricted agent key)
+    try:
+        payout = split_revenue(log_entry)
+    except Exception as e:
+        payout = {"payout": "failed", "reason": str(e)}
+
     return {
         "status": "success",
         "order_id": order_id,
@@ -66,5 +73,6 @@ def process_order(topic: str, payment_amount_usd: float, payment_token: str = "U
             "owner": round(owner_share, 4),
             "contributors": round(contributors_share, 4),
             "reserve": round(reserve, 4)
-        }
+        },
+        "payout": payout
     }
