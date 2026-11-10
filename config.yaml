@@ -1,5 +1,8 @@
-min_price_usd: 5.0
+min_price_usd: 0.5
 max_daily_inference_spend_usd: 15.0
+
+# Standard report price (USD)
+price_usd: 1.0
 
 revenue_split:
   owner: 0.70

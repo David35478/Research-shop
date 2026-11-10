@@ -1,91 +1,164 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Research Shop — buy a research report</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; background: #0d1117; color: #e6edf3; }
-    input, button { font-size: 16px; padding: 10px; border-radius: 8px; }
-    input { width: 100%; box-sizing: border-box; background: #161b22; color: #e6edf3; border: 1px solid #30363d; }
-    button { background: #238636; color: white; border: 0; cursor: pointer; margin-top: 12px; width: 100%; }
-    .card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-top: 20px; }
-    .mono { font-family: monospace; word-break: break-all; background: #0d1117; padding: 8px; border-radius: 6px; }
-    pre { white-space: pre-wrap; }
-    .status { font-weight: bold; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Shop — the one-person AI research firm</title>
+<style>
+  :root { --bg:#0b0e14; --card:#131722; --line:#232a3b; --text:#e8edf6; --dim:#8b94a7; --green:#2ea043; --blue:#316dca; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: ui-sans-serif, system-ui, sans-serif; background:var(--bg); color:var(--text); }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; }
+  header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; }
+  .logo { font-weight:700; font-size:18px; }
+  .logo span { color: var(--blue); }
+  nav a { color:var(--dim); text-decoration:none; font-size:14px; margin-left:16px; }
+  nav a:hover { color:var(--text); }
+  .hero { text-align:center; padding: 40px 0 24px; }
+  .hero h1 { font-size: 34px; line-height:1.15; margin: 0 0 12px; }
+  .hero h1 em { font-style: normal; color: #6cb0ff; }
+  .hero p { color:var(--dim); font-size:16px; max-width:520px; margin:0 auto 24px; }
+  .how { display:grid; grid-template-columns: repeat(4,1fr); gap:8px; margin: 28px 0; }
+  .how div { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 10px; text-align:center; font-size:13px; color:var(--dim); }
+  .how b { display:block; font-size:20px; margin-bottom:4px; color:var(--text); }
+  @media (max-width:600px){ .how { grid-template-columns: repeat(2,1fr);} .hero h1{font-size:26px;} }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin-top:18px; }
+  label { font-size:14px; color:var(--dim); }
+  input { width:100%; font-size:16px; padding:12px; margin:8px 0 4px; border-radius:10px; background:#0d1117; color:var(--text); border:1px solid var(--line); }
+  button { font-size:16px; font-weight:600; padding:12px; border-radius:10px; border:0; cursor:pointer; width:100%; margin-top:10px; color:#fff; }
+  .buy { background: var(--green); }
+  .demo { background: var(--blue); }
+  .steps { display:none; margin-top: 16px; }
+  .step { display:flex; gap:10px; align-items:center; padding:8px 0; color:var(--dim); font-size:14px; }
+  .step .dot { width:22px; height:22px; border-radius:50%; background:var(--line); display:flex; align-items:center; justify-content:center; font-size:12px; flex:none; }
+  .step.on { color:var(--text); }
+  .step.on .dot { background:var(--green); }
+  .step.done .dot { background:#1f6feb40; }
+  .mono { font-family: ui-monospace, monospace; word-break: break-all; background:#0d1117; padding:10px; border-radius:8px; font-size:13px; }
+  .paygrid { display:flex; gap:16px; align-items:flex-start; margin-top:10px; }
+  .paygrid .qr { background:#fff; padding:8px; border-radius:10px; flex:none; width:132px; height:132px; display:none; }
+  .paygrid .qr svg { width:100%; height:100%; }
+  pre.report { white-space:pre-wrap; font-family: ui-monospace, monospace; font-size:13px; line-height:1.5; }
+  .err { color:#ff7b72; font-size:13px; white-space:pre-wrap; margin-top:10px; }
+  .status { font-weight:600; }
+  footer { margin-top:28px; color:var(--dim); font-size:13px; text-align:center; }
+  footer b { color: var(--text); }
+</style>
 </head>
 <body>
-  <h1>🛒 Research Shop</h1>
-  <p>Pay with crypto (NEAR Intents / 1Click) — get an AI research report.</p>
+<div class="wrap">
+  <header>
+    <div class="logo">🛒 Research<span>Shop</span></div>
+    <nav><a href="/dashboard">Ledger</a></nav>
+  </header>
+
+  <section class="hero">
+    <h1>The <em>one-person</em> AI research firm</h1>
+    <p>You ask a question. You pay $1 from any wallet. An AI agent writes your report and runs its own books — no humans in the loop.</p>
+  </section>
+
+  <div class="how">
+    <div><b>1.</b>Request a topic</div>
+    <div><b>2.</b>Pay from any chain</div>
+    <div><b>3.</b>AI writes the report</div>
+    <div><b>4.</b>Revenue split on-chain</div>
+  </div>
+
   <div class="card">
-    <label>What should we research?</label><br><br>
-    <input id="topic" placeholder="e.g. Current adoption of NEAR Intents">
-    <button onclick="buy()">Buy report — $8.00</button>
-    <button onclick="buy(true)" style="background:#1f6feb">Try demo (simulated, no payment)</button>
+    <label>What should we research?</label>
+    <input id="topic" placeholder="e.g. Is Solana overtaking Ethereum in 2026?">
+    <button class="buy" onclick="buy()">Buy report — $1.00</button>
+    <button class="demo" onclick="buy(true)">Try demo (simulated, no payment)</button>
+    <div id="err" class="err"></div>
   </div>
+
   <div class="card" id="payCard" style="display:none">
-    <h3>Send exactly <span id="amt"></span></h3>
-    <p>To this address:</p>
-    <div class="mono" id="addr"></div>
-    <p>Order: <span id="oid"></span> — status: <span class="status" id="status">awaiting payment</span></p>
+    <h3 style="margin:0 0 4px">Send exactly <span id="amt"></span></h3>
+    <p style="color:var(--dim); font-size:13px; margin:0 0 8px">From any chain — solvers route it automatically. Expires in 10 minutes.</p>
+    <div class="paygrid">
+      <div class="qr" id="qrBox"><div id="qr"></div></div>
+      <div style="flex:1; min-width:0">
+        <label>Deposit address</label>
+        <div class="mono" id="addr"></div>
+        <p style="color:var(--dim); font-size:13px">Order <span id="oid"></span></p>
+        <p style="font-size:14px">Status: <span class="status" id="status">waiting for payment</span></p>
+      </div>
+    </div>
+    <div class="steps" id="steps">
+      <div class="step" id="s1"><div class="dot">1</div>Waiting for your payment…</div>
+      <div class="step" id="s2"><div class="dot">2</div>Payment detected on-chain</div>
+      <div class="step" id="s3"><div class="dot">3</div>Agent writes the report</div>
+      <div class="step" id="s4"><div class="dot">4</div>Delivered + revenue split</div>
+    </div>
   </div>
-  <div class="card" id="errCard" style="display:none">
-    <h3>⚠️ Something went wrong</h3>
-    <pre id="err" style="color:#f85149"></pre>
-  </div>
+
   <div class="card" id="reportCard" style="display:none">
-    <h3>📄 Your report</h3>
-    <pre id="report"></pre>
+    <h3 style="margin:0 0 8px">📄 Your report</h3>
+    <pre class="report" id="report"></pre>
   </div>
-  <script>
-    let orderId = null;
-    function showError(msg) {
-      document.getElementById('errCard').style.display = 'block';
-      document.getElementById('err').textContent = msg;
+
+  <footer id="stats">Every order is public: <a href="/dashboard" style="color:var(--blue)">view the ledger</a></footer>
+</div>
+
+<script>
+  let orderId = null;
+  const $ = id => document.getElementById(id);
+  function setStep(n, done) {
+    $('steps').style.display = 'block';
+    for (let i = 1; i <= 4; i++) {
+      const el = $('s'+i);
+      el.classList.toggle('on', i === n);
+      el.classList.toggle('done', i < n || (done && i <= n));
     }
-    async function buy(demo = false) {
-      document.getElementById('errCard').style.display = 'none';
-      const topic = document.getElementById('topic').value.trim();
-      if (!topic) return alert('Enter a topic');
-      let r, o;
-      try {
-        r = await fetch('/api/order', {
-          method: 'POST', headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({topic, amount_usd: 8.0, demo})
-        });
-        o = await r.json();
-      } catch (e) {
-        return showError('Network error: ' + e + ' — if this site is on Vercel, check that Deployment Protection is disabled so the API is reachable.');
-      }
-      if (!r.ok) {
-        return showError('API error ' + r.status + ': ' + JSON.stringify(o).slice(0, 300) +
-          (r.status === 401 ? ' — deployment is protected by Vercel Authentication; disable it in Vercel → Settings → Deployment Protection.' : ''));
-      }
-      if (o.simulated) {
-        document.getElementById('reportCard').style.display = 'block';
-        document.getElementById('report').textContent = o.report;
-        document.getElementById('status').textContent = 'success (simulated)';
-        return;
-      }
-      orderId = o.order_id;
-      document.getElementById('payCard').style.display = 'block';
-      document.getElementById('amt').textContent = '$' + (o.amount_in_usd || '8.00');
-      document.getElementById('addr').textContent = o.deposit_address;
-      document.getElementById('oid').textContent = orderId;
-      poll();
+  }
+  function showError(msg) { $('err').textContent = msg; }
+  async function buy(demo = false) {
+    $('err').textContent = ''; $('reportCard').style.display = 'none';
+    const topic = $('topic').value.trim();
+    if (!topic) return alert('Enter a topic');
+    let r, o;
+    try {
+      r = await fetch('/api/order', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({topic, demo}) });
+      o = await r.json();
+    } catch (e) { return showError('Network error: ' + e); }
+    if (!r.ok) return showError('API error ' + r.status + ': ' + JSON.stringify(o).slice(0,200));
+    if (o.simulated) {
+      $('reportCard').style.display = 'block';
+      $('report').textContent = o.report;
+      return;
     }
-    async function poll() {
-      const r = await fetch('/api/order/' + orderId);
-      const o = await r.json();
-      document.getElementById('status').textContent = o.status;
-      if (o.status === 'success') {
-        document.getElementById('reportCard').style.display = 'block';
-        document.getElementById('report').textContent = o.report;
-        return;
-      }
-      setTimeout(poll, 5000);
+    orderId = o.order_id;
+    $('payCard').style.display = 'block';
+    $('amt').textContent = '$' + (o.amount_in_usd ? (+o.amount_in_usd).toFixed(2) : '1.00');
+    $('addr').textContent = o.deposit_address;
+    $('oid').textContent = orderId;
+    // QR: embed the deposit address for wallet apps
+    const qrData = o.deposit_address + '|amount=' + (o.send_amount_base_units || '');
+    $('qr').innerHTML = '<img alt="payment QR" style="width:100%;height:100%" src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + encodeURIComponent(qrData) + '">';
+    $('qrBox').style.display = 'block';
+    setStep(1, false);
+    poll();
+  }
+  async function poll() {
+    let r, o;
+    try {
+      r = await fetch('/api/order/' + orderId); o = await r.json();
+    } catch (e) { setTimeout(poll, 5000); return; }
+    if (o.status === 'awaiting_payment') { setStep(1, false); setTimeout(poll, 5000); return; }
+    if (o.status === 'payment_detected') {
+      $('status').textContent = 'payment received';
+      setStep(3, false); setTimeout(poll, 5000); return;
     }
-  </script>
+    if (o.status === 'success') {
+      $('status').textContent = 'delivered';
+      setStep(4, true);
+      $('reportCard').style.display = 'block';
+      $('report').textContent = o.report;
+      return;
+    }
+    $('status').textContent = o.status;
+  }
+</script>
 </body>
 </html>
