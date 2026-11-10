@@ -96,10 +96,20 @@ Report delivered (file, JSON response, or web page)
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your-key   # Claude-compatible API key
-# optional: agent's restricted function-call key for live payouts
-# export AGENT_NEAR_PRIVATE_KEY=<ed25519 private key hex>
+cp .env.example .env             # then fill in your real keys
+. .env                           # or set variables directly in your shell
 ```
+
+Environment variables (see `.env.example`):
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | for real reports | Claude-compatible inference key |
+| `AGENT_NEAR_PRIVATE_KEY` | for live payouts | agent's restricted function-call key (hex) |
+| `OUTLAYER_API_KEY` | optional | reserved for OutLayer custody integration |
+| `ZAI_API_KEY` | optional | unused since the Anthropic switch; kept for compatibility |
+
+Never commit real keys: `.env` is gitignored, and on Vercel keys go in **Settings → Environment Variables** instead. Demo mode needs no keys at all.
 
 Configure `config.yaml`:
 
@@ -185,6 +195,7 @@ Every order (amount, inference cost, splits, report preview, model used, timesta
 - Minimum price and daily inference spend limits are enforced by `src/constraints.py`.
 - The agent's signing capability is allowlisted twice: at the NEAR protocol level (function-call key grant) and again in `src/payout.py` before any transaction is signed.
 - The API key is read from the environment only — never commit keys.
+- Ledger writes fall back to `/tmp` on read-only filesystems (Vercel), so orders never fail on logging.
 
 ## Tests
 
