@@ -6,15 +6,21 @@
 """
 import json
 import uuid
+import io
+import base64
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel
+import qrcode
+import qrcode.image.svg
 
 from src.payment import get_quote, get_status
 from src.agent import process_order
 from src.demo_mode import run_demo_order
+from src.ledger import get_ledger
+from src.config import load_config
 
 app = FastAPI(title="Research Shop")
 ORDERS_FILE = Path("/tmp/orders_web.json")
@@ -22,7 +28,7 @@ ORDERS_FILE = Path("/tmp/orders_web.json")
 
 class OrderRequest(BaseModel):
     topic: str
-    amount_usd: float = 8.0
+    amount_usd: float | None = None
     demo: bool = False
 
 
@@ -38,17 +44,19 @@ def save_orders(orders: dict):
 
 @app.post("/api/order")
 def create_order(req: OrderRequest):
+    cfg = load_config()
+    amount = req.amount_usd if req.amount_usd is not None else cfg.get("price_usd", 1.0)
     try:
         if req.demo:
-            return run_demo_order(req.topic, req.amount_usd)
+            return run_demo_order(req.topic, amount)
     except Exception as e:
         raise HTTPException(500, f"demo order failed: {e}")
     order_id = str(uuid.uuid4())[:8]
-    quote = get_quote(req.amount_usd)
+    quote = get_quote(amount)
     order = {
         "order_id": order_id,
         "topic": req.topic,
-        "amount_usd": req.amount_usd,
+        "amount_usd": amount,
         "status": "awaiting_payment",
         "deposit_address": quote["depositAddress"],
         "amount_in_usd": quote.get("amountInUsd"),
@@ -58,6 +66,34 @@ def create_order(req: OrderRequest):
     orders[order_id] = order
     save_orders(orders)
     return order
+
+
+@app.get("/api/qr/{order_id}")
+def order_qr(order_id: str):
+    """Payment QR: encodes the exact deposit address + amount for wallet apps."""
+    order = load_orders().get(order_id)
+    if not order:
+        raise HTTPException(404, "order not found")
+    data = f"{order['deposit_address']}|amount={order['send_amount_base_units']}"
+    img = qrcode.make(data, image_factory=qrcode.image.svg.SvgPathImage, box_size=12)
+    buf = io.BytesIO()
+    img.save(buf)
+    return Response(
+        content=buf.getvalue(),
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+@app.get("/dashboard")
+def dashboard():
+    return FileResponse("dashboard.html")
+
+
+@app.get("/api/ledger")
+def ledger_public():
+    entries = [e for e in get_ledger() if e.get("type") != "payout_pending"]
+    return {"entries": entries}
 
 
 @app.get("/api/order/{order_id}")

@@ -82,6 +82,7 @@ def run_demo_order(topic: str, amount_usd: float = 8.0) -> dict:
         "status": "success",
         "simulated": True,
         "order_id": order_id,
+        "amount_usd": amount_usd,
         "deposit_address": deposit_address,
         "report": report,
         "inference_cost_usd": estimated_cost,

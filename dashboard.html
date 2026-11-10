@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Shop — public ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#101418; --surface:#f7f5f0; --card:#ffffff; --line:#e4e0d6;
+    --accent:#1d4ed8; --dim:#5b6472;
+    --font-display:"Fraunces", Georgia, serif; --font-body:"Space Grotesk", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--surface); color:var(--ink); font-family:var(--font-body); font-size:16px; line-height:1.5; }
+  .wrap { max-width: 880px; margin:0 auto; padding: 20px 20px 64px; }
+  a { color: var(--accent); text-decoration:none; padding: 10px 0; display:inline-block; }
+  a:hover { text-decoration: underline; }
+  h1 { font-family:var(--font-display); font-size: clamp(28px, 5vw, 42px); letter-spacing:-0.02em; margin: 10px 0 6px; }
+  .sub { color:var(--dim); font-size:15.5px; max-width:56ch; margin-bottom:26px; text-wrap:pretty; }
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:24px; }
+  @media (max-width:600px){ .stats { grid-template-columns:repeat(2,1fr);} }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 12px; }
+  .stat b { display:block; font-family:var(--font-display); font-size: clamp(22px,3vw,30px); letter-spacing:-0.01em; }
+  .stat span { color:var(--dim); font-size:13px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  th { text-align:left; color:var(--dim); font-weight:500; font-size:13px; padding:12px 10px; border-bottom:1px solid var(--line); }
+  td { padding:11px 10px; border-bottom:1px solid var(--line); }
+  tr:last-child td { border-bottom:0; }
+  .tag { font-size:12px; padding:2px 8px; border-radius:999px; border:1px solid; }
+  .real { color:#1d4ed8; border-color:#1d4ed855; background:#1d4ed810; }
+  .sim { color:#b45309; border-color:#b4530955; background:#b4530910; }
+  .mono { font-family:ui-monospace, monospace; font-size:13px; }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/">← Back to the shop</a>
+  <h1>Public ledger</h1>
+  <p class="sub">Every order the agent has processed — the amount paid, what the AI inference cost, and how the revenue was split. Nothing is hidden; this page reads directly from the agent's ledger.</p>
+  <div class="stats">
+    <div class="stat"><b id="n">0</b><span>orders</span></div>
+    <div class="stat"><b id="rev">$0.00</b><span>revenue</span></div>
+    <div class="stat"><b id="cost">$0.000</b><span>inference cost</span></div>
+    <div class="stat"><b id="sim">0</b><span>simulated</span></div>
+  </div>
+  <table>
+    <thead><tr><th>Order</th><th>Topic</th><th>Amount</th><th>Owner</th><th>Contrib.</th><th>Reserve</th><th>Type</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+<script>
+  fetch('/api/ledger').then(r => r.json()).then(({entries}) => {
+    const orders = entries.filter(e => e.order_id && e.status !== 'rejected');
+    document.getElementById('n').textContent = orders.length;
+    document.getElementById('rev').textContent = '$' + orders.reduce((s,e)=>s+(e.amount_usd||0),0).toFixed(2);
+    document.getElementById('cost').textContent = '$' + orders.reduce((s,e)=>s+(e.inference_cost_usd||0),0).toFixed(3);
+    document.getElementById('sim').textContent = orders.filter(e=>e.simulated).length;
+    document.getElementById('rows').innerHTML = orders.slice().reverse().map(e => `
+      <tr>
+        <td class="mono">${e.order_id}</td>
+        <td>${(e.topic||'').slice(0,52)}</td>
+        <td class="mono">$${(e.amount_usd||0).toFixed(2)}</td>
+        <td class="mono">$${(e.owner_share||0).toFixed(2)}</td>
+        <td class="mono">$${(e.contributors_share||0).toFixed(2)}</td>
+        <td class="mono">$${(e.reserve||0).toFixed(2)}</td>
+        <td><span class="tag ${e.simulated?'sim':'real'}">${e.simulated?'DEMO':'REAL'}</span></td>
+      </tr>`).join('');
+  });
+</script>
+</body>
+</html>
