@@ -4,84 +4,149 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Research Shop — the one-person AI research firm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0b0e14; --card:#131722; --line:#232a3b; --text:#e8edf6; --dim:#8b94a7; --green:#2ea043; --blue:#316dca; }
+  /* Design tokens — controlled palette: ink, paper, one accent, one signal */
+  :root {
+    --ink: #101418;
+    --surface: #f7f5f0;
+    --card: #ffffff;
+    --line: #e4e0d6;
+    --accent: #1d4ed8;      /* actions + links */
+    --signal: #b45309;      /* awaiting / caution */
+    --dim: #5b6472;
+    --radius: 14px;
+    --font-display: "Fraunces", Georgia, serif;
+    --font-body: "Space Grotesk", sans-serif;
+  }
   * { box-sizing: border-box; }
-  body { margin:0; font-family: ui-sans-serif, system-ui, sans-serif; background:var(--bg); color:var(--text); }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; }
-  header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; }
-  .logo { font-weight:700; font-size:18px; }
-  .logo span { color: var(--blue); }
-  nav a { color:var(--dim); text-decoration:none; font-size:14px; margin-left:16px; }
-  nav a:hover { color:var(--text); }
-  .hero { text-align:center; padding: 40px 0 24px; }
-  .hero h1 { font-size: 34px; line-height:1.15; margin: 0 0 12px; }
-  .hero h1 em { font-style: normal; color: #6cb0ff; }
-  .hero p { color:var(--dim); font-size:16px; max-width:520px; margin:0 auto 24px; }
-  .how { display:grid; grid-template-columns: repeat(4,1fr); gap:8px; margin: 28px 0; }
-  .how div { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 10px; text-align:center; font-size:13px; color:var(--dim); }
-  .how b { display:block; font-size:20px; margin-bottom:4px; color:var(--text); }
-  @media (max-width:600px){ .how { grid-template-columns: repeat(2,1fr);} .hero h1{font-size:26px;} }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px; margin-top:18px; }
-  label { font-size:14px; color:var(--dim); }
-  input { width:100%; font-size:16px; padding:12px; margin:8px 0 4px; border-radius:10px; background:#0d1117; color:var(--text); border:1px solid var(--line); }
-  button { font-size:16px; font-weight:600; padding:12px; border-radius:10px; border:0; cursor:pointer; width:100%; margin-top:10px; color:#fff; }
-  .buy { background: var(--green); }
-  .demo { background: var(--blue); }
-  .steps { display:none; margin-top: 16px; }
-  .step { display:flex; gap:10px; align-items:center; padding:8px 0; color:var(--dim); font-size:14px; }
-  .step .dot { width:22px; height:22px; border-radius:50%; background:var(--line); display:flex; align-items:center; justify-content:center; font-size:12px; flex:none; }
-  .step.on { color:var(--text); }
-  .step.on .dot { background:var(--green); }
-  .step.done .dot { background:#1f6feb40; }
-  .mono { font-family: ui-monospace, monospace; word-break: break-all; background:#0d1117; padding:10px; border-radius:8px; font-size:13px; }
-  .paygrid { display:flex; gap:16px; align-items:flex-start; margin-top:10px; }
-  .paygrid .qr { background:#fff; padding:8px; border-radius:10px; flex:none; width:132px; height:132px; display:none; }
-  .paygrid .qr svg { width:100%; height:100%; }
-  pre.report { white-space:pre-wrap; font-family: ui-monospace, monospace; font-size:13px; line-height:1.5; }
-  .err { color:#ff7b72; font-size:13px; white-space:pre-wrap; margin-top:10px; }
-  .status { font-weight:600; }
-  footer { margin-top:28px; color:var(--dim); font-size:13px; text-align:center; }
-  footer b { color: var(--text); }
+  body {
+    margin:0; background: var(--surface); color: var(--ink);
+    font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 20px 20px 72px; }
+  header { display:flex; justify-content:space-between; align-items:center; padding: 6px 0; }
+  .logo { font-family: var(--font-display); font-weight:700; font-size: clamp(19px, 2vw, 22px); letter-spacing: -0.01em; }
+  nav a { color: var(--dim); text-decoration:none; font-size:15px; padding: 12px 4px; }
+  nav a:hover, nav a:focus { color: var(--accent); }
+
+  .hero { text-align:center; padding: clamp(44px, 9vw, 88px) 0 30px; }
+  .hero h1 {
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(38px, 7vw, 68px);   /* ~4x body: display hierarchy */
+    line-height: 1.04; letter-spacing: -0.02em;
+    margin: 0 auto 18px; max-width: 15ch; text-wrap: balance;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); }
+  .hero p { color: var(--dim); font-size: clamp(17px, 2vw, 19px); max-width: 46ch; margin: 0 auto 30px; text-wrap: pretty; }
+
+  .how {
+    display:grid; grid-template-columns: repeat(4,1fr); gap: 10px;
+    margin: 34px 0 10px;
+  }
+  .how div {
+    background: transparent; border-top: 2px solid var(--ink);
+    padding: 12px 2px 0; font-size: 14px; color: var(--dim); line-height: 1.4;
+  }
+  .how b { display:block; font-family: var(--font-display); font-size: 15px; color: var(--ink); margin-bottom: 2px; }
+  @media (max-width:600px){ .how { grid-template-columns: repeat(2,1fr); row-gap: 18px; } }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: clamp(20px, 4vw, 30px); margin-top: 20px;
+    box-shadow: 0 1px 2px rgb(16 20 24 / 4%), 0 8px 24px rgb(16 20 24 / 5%);
+  }
+  label { font-size: 15px; color: var(--dim); display:block; }
+  input {
+    width:100%; font: inherit; font-size: 17px; padding: 14px; margin: 8px 0 6px;
+    border-radius: 10px; background: var(--surface); color: var(--ink); border: 1px solid var(--line);
+  }
+  input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  button {
+    font: inherit; font-weight:600; font-size: 17px;
+    min-height: 48px;                       /* 44px+ touch target */
+    padding: 12px 20px; border-radius: 10px; border: 1px solid transparent;
+    cursor:pointer; width:100%; margin-top: 10px;
+    transition: transform 120ms ease, background 160ms ease;
+  }
+  button:hover { transform: translateY(-1px); }
+  button:active { transform: translateY(0); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .buy { background: var(--ink); color: var(--surface); }
+  .buy:hover { background: #000; }
+  .demo { background: transparent; color: var(--accent); border-color: var(--accent); }
+  .demo:hover { background: oklch(0.48 0.2 262 / 0.06); }
+
+  .steps { display:none; margin-top: 18px; }
+  .step { display:flex; gap:12px; align-items:center; padding:9px 0; color: var(--dim); font-size:15px; }
+  .step .dot {
+    width:26px; height:26px; border-radius:50%; background: var(--line);
+    display:flex; align-items:center; justify-content:center; font-size:13px; flex:none;
+    transition: background 300ms ease;
+  }
+  .step.on { color: var(--ink); }
+  .step.on .dot { background: var(--signal); color:#fff; }
+  .step.done { color: var(--dim); }
+  .step.done .dot { background: var(--ink); color: var(--surface); }
+
+  .mono { font-family: ui-monospace, monospace; word-break: break-all; background: var(--surface); padding:10px 12px; border-radius:8px; font-size:13.5px; border:1px solid var(--line); }
+  .paygrid { display:flex; gap:20px; align-items:flex-start; margin-top:12px; }
+  .paygrid .qr { background:#fff; padding:8px; border-radius:10px; flex:none; width:136px; height:136px; border:1px solid var(--line); display:none; }
+  .paygrid .qr svg, .paygrid .qr img { width:100%; height:100%; display:block; }
+  @media (max-width:520px){ .paygrid { flex-direction: column; } .paygrid .qr { width:160px; } }
+
+  pre.report {
+    white-space:pre-wrap; font-family: ui-monospace, monospace; font-size:13.5px;
+    line-height:1.6; margin:0; overflow-x:hidden;
+  }
+  .err { color:#b42318; font-size:14px; white-space:pre-wrap; margin-top:12px; display:none; }
+  .status { font-weight:600; color: var(--signal); }
+  footer { margin-top:36px; color:var(--dim); font-size:14px; text-align:center; }
+  footer a { color: var(--accent); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="logo">🛒 Research<span>Shop</span></div>
-    <nav><a href="/dashboard">Ledger</a></nav>
+    <div class="logo">Research Shop</div>
+    <nav><a href="/dashboard">Public ledger</a></nav>
   </header>
 
   <section class="hero">
-    <h1>The <em>one-person</em> AI research firm</h1>
-    <p>You ask a question. You pay $1 from any wallet. An AI agent writes your report and runs its own books — no humans in the loop.</p>
+    <h1>The <em>one&#8209;person</em> research firm</h1>
+    <p>Ask a question. Pay $1 from any wallet. An autonomous agent writes your report and runs its own books — no humans in the loop.</p>
   </section>
 
   <div class="how">
-    <div><b>1.</b>Request a topic</div>
-    <div><b>2.</b>Pay from any chain</div>
-    <div><b>3.</b>AI writes the report</div>
-    <div><b>4.</b>Revenue split on-chain</div>
+    <div><b>Request</b>Enter any research topic</div>
+    <div><b>Pay</b>$1 from any chain, any wallet</div>
+    <div><b>Generate</b>The agent writes your report</div>
+    <div><b>Settle</b>Revenue split, logged on-chain</div>
   </div>
 
   <div class="card">
-    <label>What should we research?</label>
+    <label for="topic">What should we research?</label>
     <input id="topic" placeholder="e.g. Is Solana overtaking Ethereum in 2026?">
     <button class="buy" onclick="buy()">Buy report — $1.00</button>
     <button class="demo" onclick="buy(true)">Try demo (simulated, no payment)</button>
-    <div id="err" class="err"></div>
+    <div id="err" class="err" role="alert"></div>
   </div>
 
   <div class="card" id="payCard" style="display:none">
-    <h3 style="margin:0 0 4px">Send exactly <span id="amt"></span></h3>
-    <p style="color:var(--dim); font-size:13px; margin:0 0 8px">From any chain — solvers route it automatically. Expires in 10 minutes.</p>
+    <h3 style="margin:0 0 2px; font-family:var(--font-display); font-size:22px">Send exactly <span id="amt"></span></h3>
+    <p style="color:var(--dim); font-size:14px; margin:2px 0 10px">From any chain — solvers route it automatically. Quote expires in 10 minutes.</p>
     <div class="paygrid">
-      <div class="qr" id="qrBox"><div id="qr"></div></div>
+      <div class="qr" id="qrBox"><div id="qr" style="width:100%;height:100%"></div></div>
       <div style="flex:1; min-width:0">
         <label>Deposit address</label>
         <div class="mono" id="addr"></div>
-        <p style="color:var(--dim); font-size:13px">Order <span id="oid"></span></p>
-        <p style="font-size:14px">Status: <span class="status" id="status">waiting for payment</span></p>
+        <p style="color:var(--dim); font-size:13.5px; margin:8px 0">Order <span class="mono" id="oid"></span></p>
+        <p style="font-size:15px; margin:0">Status: <span class="status" id="status">waiting for payment</span></p>
       </div>
     </div>
     <div class="steps" id="steps">
@@ -93,11 +158,11 @@
   </div>
 
   <div class="card" id="reportCard" style="display:none">
-    <h3 style="margin:0 0 8px">📄 Your report</h3>
+    <h3 style="margin:0 0 10px; font-family:var(--font-display); font-size:22px">Your report</h3>
     <pre class="report" id="report"></pre>
   </div>
 
-  <footer id="stats">Every order is public: <a href="/dashboard" style="color:var(--blue)">view the ledger</a></footer>
+  <footer>Every order is public — <a href="/dashboard">inspect the ledger</a>.</footer>
 </div>
 
 <script>
@@ -111,9 +176,9 @@
       el.classList.toggle('done', i < n || (done && i <= n));
     }
   }
-  function showError(msg) { $('err').textContent = msg; }
+  function showError(msg) { $('err').textContent = msg; $('err').style.display = 'block'; }
   async function buy(demo = false) {
-    $('err').textContent = ''; $('reportCard').style.display = 'none';
+    $('err').style.display = 'none'; $('reportCard').style.display = 'none';
     const topic = $('topic').value.trim();
     if (!topic) return alert('Enter a topic');
     let r, o;
@@ -133,9 +198,8 @@
     $('amt').textContent = '$' + (o.amount_in_usd ? (+o.amount_in_usd).toFixed(2) : '1.00');
     $('addr').textContent = o.deposit_address;
     $('oid').textContent = orderId;
-    // QR: embed the deposit address for wallet apps
     const qrData = o.deposit_address + '|amount=' + (o.send_amount_base_units || '');
-    $('qr').innerHTML = '<img alt="payment QR" style="width:100%;height:100%" src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + encodeURIComponent(qrData) + '">';
+    $('qr').innerHTML = '<img alt="payment QR" src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' + encodeURIComponent(qrData) + '">';
     $('qrBox').style.display = 'block';
     setStep(1, false);
     poll();
