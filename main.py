@@ -14,6 +14,7 @@ from pydantic import BaseModel
 
 from src.payment import get_quote, get_status
 from src.agent import process_order
+from src.demo_mode import run_demo_order
 
 app = FastAPI(title="Research Shop")
 ORDERS_FILE = Path("/tmp/orders_web.json")
@@ -22,6 +23,7 @@ ORDERS_FILE = Path("/tmp/orders_web.json")
 class OrderRequest(BaseModel):
     topic: str
     amount_usd: float = 8.0
+    demo: bool = False
 
 
 def load_orders() -> dict:
@@ -36,6 +38,8 @@ def save_orders(orders: dict):
 
 @app.post("/api/order")
 def create_order(req: OrderRequest):
+    if req.demo:
+        return run_demo_order(req.topic, req.amount_usd)
     order_id = str(uuid.uuid4())[:8]
     quote = get_quote(req.amount_usd)
     order = {
