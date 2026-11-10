@@ -30,20 +30,38 @@
     <div class="mono" id="addr"></div>
     <p>Order: <span id="oid"></span> — status: <span class="status" id="status">awaiting payment</span></p>
   </div>
+  <div class="card" id="errCard" style="display:none">
+    <h3>⚠️ Something went wrong</h3>
+    <pre id="err" style="color:#f85149"></pre>
+  </div>
   <div class="card" id="reportCard" style="display:none">
     <h3>📄 Your report</h3>
     <pre id="report"></pre>
   </div>
   <script>
     let orderId = null;
+    function showError(msg) {
+      document.getElementById('errCard').style.display = 'block';
+      document.getElementById('err').textContent = msg;
+    }
     async function buy(demo = false) {
+      document.getElementById('errCard').style.display = 'none';
       const topic = document.getElementById('topic').value.trim();
       if (!topic) return alert('Enter a topic');
-      const r = await fetch('/api/order', {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({topic, amount_usd: 8.0, demo})
-      });
-      const o = await r.json();
+      let r, o;
+      try {
+        r = await fetch('/api/order', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({topic, amount_usd: 8.0, demo})
+        });
+        o = await r.json();
+      } catch (e) {
+        return showError('Network error: ' + e + ' — if this site is on Vercel, check that Deployment Protection is disabled so the API is reachable.');
+      }
+      if (!r.ok) {
+        return showError('API error ' + r.status + ': ' + JSON.stringify(o).slice(0, 300) +
+          (r.status === 401 ? ' — deployment is protected by Vercel Authentication; disable it in Vercel → Settings → Deployment Protection.' : ''));
+      }
       if (o.simulated) {
         document.getElementById('reportCard').style.display = 'block';
         document.getElementById('report').textContent = o.report;
