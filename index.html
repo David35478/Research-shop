@@ -22,6 +22,7 @@
     <label>What should we research?</label><br><br>
     <input id="topic" placeholder="e.g. Current adoption of NEAR Intents">
     <button onclick="buy()">Buy report — $8.00</button>
+    <button onclick="buy(true)" style="background:#1f6feb">Try demo (simulated, no payment)</button>
   </div>
   <div class="card" id="payCard" style="display:none">
     <h3>Send exactly <span id="amt"></span></h3>
@@ -35,14 +36,20 @@
   </div>
   <script>
     let orderId = null;
-    async function buy() {
+    async function buy(demo = false) {
       const topic = document.getElementById('topic').value.trim();
       if (!topic) return alert('Enter a topic');
       const r = await fetch('/api/order', {
         method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({topic, amount_usd: 8.0})
+        body: JSON.stringify({topic, amount_usd: 8.0, demo})
       });
       const o = await r.json();
+      if (o.simulated) {
+        document.getElementById('reportCard').style.display = 'block';
+        document.getElementById('report').textContent = o.report;
+        document.getElementById('status').textContent = 'success (simulated)';
+        return;
+      }
       orderId = o.order_id;
       document.getElementById('payCard').style.display = 'block';
       document.getElementById('amt').textContent = '$' + (o.amount_in_usd || '8.00');
